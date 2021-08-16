@@ -1,0 +1,9 @@
+.env
+.idea
+node_modules
+**/node_modules
+/node_modules
+/node_modules/puppeteer/
+/node_modules/puppeteer/.local-chromium/win32-901912/chrome-win/chrome.dll
+/node_modules/puppeteer/.local-chromium/win32-901912/chrome-win/interactive_ui_te
+ sts.exe

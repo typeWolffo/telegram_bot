@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "axios": "^0.21.1",
+    "dotenv": "^10.0.0",
+    "node-fetch": "^2.6.1",
+    "puppeteer": "^10.2.0",
+    "telebot": "^1.4.1"
+  }
+}
