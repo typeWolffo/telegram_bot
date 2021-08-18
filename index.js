@@ -4,6 +4,7 @@ const {exec} = require("child_process");
 const bot = new TeleBot(process.env.TELEGRAM_API_KEY);
 
 players = [];
+playersFiltered = [];
 registerTimeleft = 10;
 
 class Figure {
@@ -24,15 +25,6 @@ class Player {
 
 bot.on('/register', (msg) => {
 
-
-    let replyMarkup = bot.inlineKeyboard([
-        [
-            bot.inlineButton('Rock', {callback: 'figure_rock'}),
-            bot.inlineButton('Paper', {callback: 'figure_paper'}),
-            bot.inlineButton('Scissors', {callback: 'figure_scissors'}),
-        ]
-    ], {resize: true});
-
     function timer(chatId, messageId) {
         let countdown = setInterval(async () => {
             registerTimeleft -= 1;
@@ -49,10 +41,17 @@ bot.on('/register', (msg) => {
         }, 1000);
     }
 
+    let replyMarkup = bot.inlineKeyboard([
+        [
+            bot.inlineButton('Rock', {callback: 'figure_rock'}),
+            bot.inlineButton('Paper', {callback: 'figure_paper'}),
+            bot.inlineButton('Scissors', {callback: 'figure_scissors'}),
+        ]
+    ], {resize: true});
+
     bot.on('callbackQuery', msg => {
         const action = msg.data;
         let figure = new Figure();
-        console.log('callback: ', action)
         switch (action) {
             case 'figure_rock':
                 figure.name = 'rock';
@@ -70,38 +69,43 @@ bot.on('/register', (msg) => {
                 figure.losesTo = 'rock'
                 break;
         }
-        console.log(figure)
 
-        // function setPlayerWithFigure(fig, win, lose) {
-        //     let figure = new Figure(fig, win, lose)
-        //     let player = new Player(msg.from.username, figure);
-        //     players.push(player);
-        // }
+        function addNewPlayer() {
+            let player = new Player(msg.from.username, figure.name);
+            players.push(player);
+        }
+
+        function makePlayersUnique() {
+            playersFiltered = uniquePlayers(players, player => player.name);
+        }
+
+        function determineWinner() {
+            for (let player of playersFiltered) {
+                console.log(player)
+            }
+        }
+
+        (async function gameHandler() {
+            await addNewPlayer();
+            await makePlayersUnique();
+            await determineWinner();
+        })();
     });
+
+    function uniquePlayers(data, key) {
+        return [
+            ...new Map(
+                data.map(x => [key(x), x])
+            ).values()
+        ]
+    }
 
 
     return bot.sendMessage(msg.chat.id, `${registerTimeleft}`).then(re => {
         timer(msg.chat.id, re.message_id);
-        bot.sendMessage(msg.from.id, 'Choose your figure    ', {replyMarkup});
+        bot.sendMessage(msg.chat.id, 'Choose your figure    ', {replyMarkup});
     });
 })
-
-
-// bot.on('/prs', (msg) => {
-//
-//     function registerPlayers() {
-//         players.push(msg.from.username);
-//         console.log(players);
-//         console.log(msg);
-//
-//     }
-//
-//     async function prsGame() {
-//         await registerPlayers();
-//     }
-//
-//     prsGame();
-// });
 
 
 bot.on('/test', msg => {
